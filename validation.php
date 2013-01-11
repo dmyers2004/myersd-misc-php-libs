@@ -111,6 +111,11 @@ class validation {
 		return $this->posted; // return prepped input array
 	}
 
+	function test($value,$method) {
+		$this->posted['3abfeb16153746435dd24e7c5ba166fa'] = $value;
+		return call_user_func(array($this,'_'.$method),'3abfeb16153746435dd24e7c5ba166fa');
+	}
+
 	function json() {
 		return array('valid'=>$this->valid,'errors'=>$this->errors);
 	}
@@ -495,16 +500,20 @@ class validation {
 		return (!preg_match('/^(https?|ftp):\/\/([-\w]+\.)+[A-Za-z]{2,}(:\d+)?([\\\/]\S+)*?[\\\/]?(\?\S*)?$/i', $this->posted[$field])) ? false : true;
 	}
 
+	function _md5($field) {
+		return (!preg_match('/^([a-zA-Z0-9]{32})$/', $this->posted[$field])) ? false : true;
+	}
+
 	function _valid_email($field) {
 		return (!preg_match('/^[a-z0-9_-]+(\.[a-z0-9_-]+)*@[a-z0-9_-]+(\.[a-z0-9_-]+)+$/i', $this->posted[$field])) ? false : true;
 	}
 
-	function _valid_emails($str) {
+	function _valid_emails($field) {
 		if (strpos($str, ',') === FALSE) {
-			return $this->_email(trim($str));
+			return $this->_email(trim($this->posted[$field]));
 		}
 
-		foreach(explode(',', $str) as $email) {
+		foreach(explode(',', $this->posted[$field]) as $email) {
 			if (trim($email) != '' && $this->valid_email(trim($email)) === FALSE) {
 				return FALSE;
 			}
@@ -513,32 +522,32 @@ class validation {
 		return TRUE;
 	}
 
-	function _alpha($str) {
-		return ( ! preg_match("/^([a-z])+$/i", $str)) ? FALSE : TRUE;
+	function _alpha($field) {
+		return ( ! preg_match("/^([a-z])+$/i", $this->posted[$field])) ? FALSE : TRUE;
 	}
 
-	function _alpha_numeric($str) {
-		return ( ! preg_match("/^([a-z0-9])+$/i", $str)) ? FALSE : TRUE;
+	function _alpha_numeric($field) {
+		return ( ! preg_match("/^([a-z0-9])+$/i", $this->posted[$field])) ? FALSE : TRUE;
 	}
 
-	function _alpha_dash($str) {
-		return ( ! preg_match("/^([-a-z0-9_-])+$/i", $str)) ? FALSE : TRUE;
+	function _alpha_dash($field) {
+		return ( ! preg_match("/^([-a-z0-9_-])+$/i", $this->posted[$field])) ? FALSE : TRUE;
 	}
 
-	function _numeric($str) {
-		return (bool)preg_match( '/^[\-+]?[0-9]*\.?[0-9]+$/', $str);
+	function _numeric($field) {
+		return (bool)preg_match( '/^[\-+]?[0-9]*\.?[0-9]+$/', $this->posted[$field]);
 	}
 
-	function _is_numeric($str) {
-		return ( ! is_numeric($str)) ? FALSE : TRUE;
+	function _is_numeric($field) {
+		return ( ! is_numeric($this->posted[$field])) ? FALSE : TRUE;
 	}
 
-	function _is_natural($str) {
-		return (bool)preg_match( '/^[0-9]+$/', $str);
+	function _is_natural($field) {
+		return (bool)preg_match( '/^[0-9]+$/', $this->posted[$field]);
 	}
 
-	function _is_natural_no_zero($str) {
-		if ( ! preg_match( '/^[0-9]+$/', $str)) {
+	function _is_natural_no_zero($field) {
+		if ( ! preg_match( '/^[0-9]+$/', $this->posted[$field])) {
 			return FALSE;
 		}
 
@@ -549,8 +558,8 @@ class validation {
 		return TRUE;
 	}
 
-	function _valid_base64($str) {
-		return (bool) ! preg_match('/[^a-zA-Z0-9\/\+=]/', $str);
+	function _valid_base64($field) {
+		return (bool) ! preg_match('/[^a-zA-Z0-9\/\+=]/', $this->posted[$field]);
 	}
 
 	function language() {
