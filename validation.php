@@ -32,20 +32,19 @@ class validation {
 	public $errors = array();
 	public $posted = array();
 
-	function __construct() {
+	public function __construct() {
 		$this->language();
 	}
 
-	function validate($fields,$validate_fields,&$posted=null) {
+	public function validate($fields,$validate_fields,&$posted=null) {
 		// clear some stuff
 		$this->valid = false;
 		$this->errors = array();
+		$this->posted = ($posted == null) ? $_POST : $posted;
 
 		$labels = array();
 		foreach ($validate_fields as $key => $value)
 			$labels[$key] = $value['label'];
-
-		$this->posted = ($posted == null) ? $_POST : $posted;
 
 		// only process these fields
 		foreach ($fields as $key=>$field)
@@ -81,7 +80,7 @@ class validation {
 				// did we get a error?
 				if ($result == 1) {
 					// Get corresponding error from language file
-					$line = $this->geterror($rule);
+					$line = $this->get_error($rule);
 
 					// Check if param is an array
 					if (is_array($param)) {
@@ -111,17 +110,17 @@ class validation {
 		return $this->posted; // return prepped input array
 	}
 
-	function test($value,$method) {
+	public function test($value,$method) {
 		$this->posted['3abfeb16153746435dd24e7c5ba166fa'] = $value;
 		return call_user_func(array($this,'_'.$method),'3abfeb16153746435dd24e7c5ba166fa');
 	}
 
-	function json() {
+	public function json() {
 		return array('valid'=>$this->valid,'errors'=>$this->errors);
 	}
 
 	// validations
-	function _required($field) {
+	public function _required($field) {
 		return !empty($this->posted[$field]);
 	}
 
@@ -134,7 +133,7 @@ class validation {
 		* @param string
 		* @return  bool
 		*/
-	function _alpha_dash_dot($field) {
+	public function _alpha_dash_dot($field) {
 		return (!preg_match('/^([\.-a-z0-9_-])+$/i', $this->posted[$field])) ? false : true;
 	}
 
@@ -149,7 +148,7 @@ class validation {
 		* @param string
 		* @return  bool
 		*/
-	function _alpha_slash_dot($field) {
+	public function _alpha_slash_dot($field) {
 		return (!preg_match('/^([\.\/-a-z0-9_-])+$/i', $this->posted[$field])) ? false : true;
 	}
 
@@ -166,7 +165,7 @@ class validation {
 		* @param string
 		* @return  bool
 		*/
-	function _matches($field, $other_field) {
+	public function _matches($field, $other_field) {
 		//echo 'field '.$field.' other_field '.$other_field;
 		return ($this->posted[$field] !== $this->posted[$other_field]) ? false : true;
 	}
@@ -183,7 +182,7 @@ class validation {
 		* @param string
 		* @return  bool
 		*/
-	function _min_date($field, $date) {
+	public function _min_date($field, $date) {
 		return (strtotime($this->posted[$field]) < strtotime($date)) ? false : true;
 	}
 
@@ -199,7 +198,7 @@ class validation {
 		* @param string
 		* @return  bool
 		*/
-	function _max_date($field, $date) {
+	public function _max_date($field, $date) {
 		return (strtotime($this->posted[$field]) > strtotime($date)) ? false : true;
 	}
 
@@ -215,7 +214,7 @@ class validation {
 		* @param integer
 		* @return  bool
 		*/
-	function _min_size($field, $size) {
+	public function _min_size($field, $size) {
 		return (strlen($this->posted[$field]) < $size) ? false : true;
 	}
 
@@ -231,12 +230,12 @@ class validation {
 		* @param integer
 		* @return  bool
 		*/
-	function _max_size($field, $size) {
+	public function _max_size($field, $size) {
 		return (strlen($this->posted[$field]) > $size) ? false : true;
 	}
 
 
-	function _exact_size($str, $val) {
+	public function _exact_size($str, $val) {
 		if (preg_match("/[^0-9]/", $val)) {
 			return FALSE;
 		}
@@ -260,7 +259,7 @@ class validation {
 		* @param string
 		* @return  bool
 		*/
-	function _unique($field) {
+	public function _unique($field) {
 		$val = $this->posted[$field];
 		if (!empty($val)) {
 			$query = $this->CI->db->get_where($this->tablename, array($field => $this->posted[$field]), 1, 0);
@@ -292,7 +291,7 @@ class validation {
 		* @param string
 		* @return  bool
 		*/
-	function _unique_pair($field, $other_field = '') {
+	public function _unique_pair($field, $other_field = '') {
 		if ( ! empty($this->posted[$field]) && ! empty($this->{$other_field})) {
 			$query = $this->CI->db->get_where($this->tablename, array($field => $this->posted[$field], $other_field => $this->{$other_field}), 1, 0);
 
@@ -322,7 +321,7 @@ class validation {
 		* @param string
 		* @return  bool
 		*/
-	function _valid_date($field) {
+	public function _valid_date($field) {
 		// Ignore if empty
 		if (empty($this->posted[$field])) return true;
 
@@ -343,7 +342,7 @@ class validation {
 		* @param array
 		* @return  bool
 		*/
-	function _valid_date_group($field, $fields = array()) {
+	public function _valid_date_group($field, $fields = array()) {
 		// Ignore if empty
 		if (empty($this->posted[$field])) return true;
 
@@ -364,7 +363,7 @@ class validation {
 		* @param array
 		* @return  bool
 		*/
-	function _valid_match($field, $param = array()) {
+	public function _valid_match($field, $param = array()) {
 		return ($this->posted[$field] == $this->posted[$param]);
 	}
 
@@ -380,7 +379,7 @@ class validation {
 		* @param string
 		* @return  void
 		*/
-	function _encode_php_tags($field) {
+	public function _encode_php_tags($field) {
 		$this->posted[$field] = encode_php_tags($this->posted[$field]);
 	}
 
@@ -396,7 +395,7 @@ class validation {
 		* @param string
 		* @return  void
 		*/
-	function _prep_for_form($field) {
+	public function _prep_for_form($field) {
 		$this->posted[$field] = $this->CI->form_validation->prep_for_form($this->posted[$field]);
 	}
 
@@ -412,7 +411,7 @@ class validation {
 		* @param string
 		* @return  void
 		*/
-	function _prep_url($field) {
+	public function _prep_url($field) {
 		$this->posted[$field] = $this->CI->form_validation->prep_url($this->posted[$field]);
 	}
 
@@ -428,7 +427,7 @@ class validation {
 		* @param string
 		* @return  void
 		*/
-	function _strip_image_tags($field) {
+	public function _strip_image_tags($field) {
 		$this->posted[$field] = strip_image_tags($this->posted[$field]);
 	}
 
@@ -445,7 +444,7 @@ class validation {
 		* @param bool
 		* @return  void
 		*/
-	function _xss_clean($field, $is_image = false) {
+	public function _xss_clean($field, $is_image = false) {
 		$this->CI->load->helper('security');
 		$this->posted[$field] = xss_clean($this->posted[$field],$is_image);
 	}
@@ -460,55 +459,55 @@ class validation {
 		* @return  bool
 		*/
 
-	function _alpha_number_space($field) {
+	public function _alpha_number_space($field) {
 		return (!preg_match('#^[a-zA-Z0-9 ]+$#i', $this->posted[$field])) ? false : true;
 	}
 
-	function _alpha_space($field) {
+	public function _alpha_space($field) {
 		return (!preg_match('#^[a-zA-Z ]+$#i', $this->posted[$field])) ? false : true;
 	}
 
-	function _dollars($field) {
+	public function _dollars($field) {
 		return (!preg_match('#^\$?\d+(\.(\d{2}))?$#', $this->posted[$field])) ? false : true;
 	}
 
-	function _percent($field) {
+	public function _percent($field) {
 		return (!preg_match('#^\s*(\d{0,2})(\.?(\d*))?\s*\%?$#', $this->posted[$field])) ? false : true;
 	}
 
-	function _float($field) {
+	public function _float($field) {
 		return (!preg_match('#^[-+]?[0-9]+\.?[0-9]*$#', $this->posted[$field])) ? false : true;
 	}
 
-	function _integer($field) {
+	public function _integer($field) {
 		return (!preg_match('#^[0-9]+$#', $this->posted[$field])) ? false : true;
 	}
 
-	function _zip($field) {
+	public function _zip($field) {
 		return (!preg_match('#^\d{5}$|^\d{5}-\d{4}$#', $this->posted[$field])) ? false : true;
 	}
 
-	function _phone($field) {
+	public function _phone($field) {
 		return (!preg_match('/^\(?([2-9]\d{2})\)?[\.\s-]?([2-4|6-9]\d\d|5([0-4-|6-9]\d|\d[0-4|6-9]))[\.\s-]?(\d{4})$/', $this->posted[$field])) ? false : true;
 	}
 
-	function _hexcolor($field) {
+	public function _hexcolor($field) {
 		return (!preg_match('/(^[\w\.!#$%"*+\/=?`{}|~^-]+)@(([-\w]+\.)+[A-Za-z]{2,})$/', $this->posted[$field])) ? false : true;
 	}
 
-	function _url($field) {
+	public function _url($field) {
 		return (!preg_match('/^(https?|ftp):\/\/([-\w]+\.)+[A-Za-z]{2,}(:\d+)?([\\\/]\S+)*?[\\\/]?(\?\S*)?$/i', $this->posted[$field])) ? false : true;
 	}
 
-	function _md5($field) {
+	public function _md5($field) {
 		return (!preg_match('/^([a-zA-Z0-9]{32})$/', $this->posted[$field])) ? false : true;
 	}
 
-	function _valid_email($field) {
+	public function _valid_email($field) {
 		return (!preg_match('/^[a-z0-9_-]+(\.[a-z0-9_-]+)*@[a-z0-9_-]+(\.[a-z0-9_-]+)+$/i', $this->posted[$field])) ? false : true;
 	}
 
-	function _valid_emails($field) {
+	public function _valid_emails($field) {
 		if (strpos($str, ',') === FALSE) {
 			return $this->_email(trim($this->posted[$field]));
 		}
@@ -522,31 +521,31 @@ class validation {
 		return TRUE;
 	}
 
-	function _alpha($field) {
+	public function _alpha($field) {
 		return ( ! preg_match("/^([a-z])+$/i", $this->posted[$field])) ? FALSE : TRUE;
 	}
 
-	function _alpha_numeric($field) {
+	public function _alpha_numeric($field) {
 		return ( ! preg_match("/^([a-z0-9])+$/i", $this->posted[$field])) ? FALSE : TRUE;
 	}
 
-	function _alpha_dash($field) {
+	public function _alpha_dash($field) {
 		return ( ! preg_match("/^([-a-z0-9_-])+$/i", $this->posted[$field])) ? FALSE : TRUE;
 	}
 
-	function _numeric($field) {
+	public function _numeric($field) {
 		return (bool)preg_match( '/^[\-+]?[0-9]*\.?[0-9]+$/', $this->posted[$field]);
 	}
 
-	function _is_numeric($field) {
+	public function _is_numeric($field) {
 		return ( ! is_numeric($this->posted[$field])) ? FALSE : TRUE;
 	}
 
-	function _is_natural($field) {
+	public function _is_natural($field) {
 		return (bool)preg_match( '/^[0-9]+$/', $this->posted[$field]);
 	}
 
-	function _is_natural_no_zero($field) {
+	public function _is_natural_no_zero($field) {
 		if ( ! preg_match( '/^[0-9]+$/', $this->posted[$field])) {
 			return FALSE;
 		}
@@ -558,11 +557,11 @@ class validation {
 		return TRUE;
 	}
 
-	function _valid_base64($field) {
+	public function _valid_base64($field) {
 		return (bool) ! preg_match('/[^a-zA-Z0-9\/\+=]/', $this->posted[$field]);
 	}
 
-	function language() {
+	public function language() {
 		$this->lang['required']       = "The %s field is required.";
 		$this->lang['isset']        = "The %s field must have a value.";
 		$this->lang['valid_email']    = "The %s field must contain a valid email address.";
@@ -600,7 +599,7 @@ class validation {
 		$this->lang['related_max_size']  = 'The %s relationship can not exceed %s.';
 
 		/** custom messages */
-		$this->lang['username_check']  = '%s user name check failed'; // custom function test
+		$this->lang['username_check']  = '%s user name check failed'; // custom public function test
 
 		$this->lang['alpha_number_space'] = 'The %s field may only contain alpha-numeric characters and space.';
 		$this->lang['alpha_space'] = 'The %s field may only contain alpha characters and space.';
@@ -613,7 +612,7 @@ class validation {
 		$this->lang['zip'] = 'The %s field may only contain a valid us zip code.';
 	}
 
-	function geterror($rule) {
+	public function get_error($rule) {
 		if (array_key_exists($rule,$this->lang))
 			return $this->lang[$rule];
 
